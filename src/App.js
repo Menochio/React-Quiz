@@ -1,25 +1,71 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useReducer } from "react";
+import Header from "./Header";
+import Main from "./Main";
+import Loader from "./Loader";
+import Error from "./Error";
+import StarScreen from "./StarScreen";
+import Question from "./Question";
+import Progress from "./Progress";
+import NextButton from "./NextButton";
+import Footer from "./Footer";
+import Timer from "./Timer";
+import FinishedScreen from "./FinishedScreen";
+import { useQuizContext } from "./contexts/QuizContext";
+export default function App() {
+  const {
+    questions,
+    dispatch,
+    status,
+    index,
+    points,
+    answer,
+    secondRemaining,
+  } = useQuizContext();
+  const noOfQuestions = questions.length;
+  const totalPoints = questions.reduce(
+    (acc, question) => acc + question.points,
+    0
+  );
 
-function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="app">
+      <Header />
+      <Main>
+        {status === "Loading" && <Loader />}
+        {status === "error" && <Error />}
+        {status === "ready" && (
+          <StarScreen noOfQuestions={noOfQuestions} dispatch={dispatch} />
+        )}
+        {status === "active" && (
+          <>
+            <Progress
+              numQuestions={questions.length}
+              totalPoints={totalPoints}
+            />
+            <Question
+              question={questions[index]}
+              dispatch={dispatch}
+              answer={answer}
+            />
+            <Footer>
+              <Timer dispatch={dispatch} secondRemaining={secondRemaining} />
+              <NextButton
+                dispatch={dispatch}
+                answer={answer}
+                index={index}
+                noOfQuestions={noOfQuestions}
+              />
+            </Footer>
+          </>
+        )}
+        {status === "finished" && (
+          <FinishedScreen
+            dispatch={dispatch}
+            points={points}
+            maxPoints={totalPoints}
+          />
+        )}
+      </Main>
     </div>
   );
 }
-
-export default App;
